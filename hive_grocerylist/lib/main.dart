@@ -57,7 +57,7 @@ class _HomePageState extends State<HomePage> {
 
     setState(() {
       _items = data.reversed.toList();
-      // we use "reversed" to sort items in order from the latest to the oldest
+      // reversed is used to sort items in order from the latest to the oldest
     });
   }
 
@@ -68,7 +68,6 @@ class _HomePageState extends State<HomePage> {
   }
 
   // Retrieve a single item from the database by using its key
-  // Our app won't use this function but I put it here for your reference
   Map<String, dynamic> _readItem(int key) {
     final item = _groceryList.get(key);
     return item;
@@ -94,12 +93,60 @@ class _HomePageState extends State<HomePage> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _quantityController = TextEditingController();
 
-  // This function will be triggered when the floating button is pressed
-  // It will also be triggered when you want to update an item
-  void _showForm(BuildContext ctx, int? itemKey) async {
-    // itemKey == null -> create new item
-    // itemKey != null -> update an existing item
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        centerTitle: true,
+        title: const Text('Hive Grocerylist'),
+      ),
+      body: _items.isEmpty
+          ? const Center(
+              child: Text(
+                'No Data',
+                style: TextStyle(fontSize: 30),
+              ),
+            )
+          : ListView.builder(
+              // the list of items
+              itemCount: _items.length,
+              itemBuilder: (_, index) {
+                final currentItem = _items[index];
+                return Card(
+                  color: Colors.orange.shade100,
+                  margin: const EdgeInsets.all(10),
+                  elevation: 3,
+                  child: ListTile(
+                      title: Text(currentItem['name']),
+                      subtitle: Text(currentItem['quantity'].toString()),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // Edit button
+                          IconButton(
+                              icon: const Icon(Icons.edit),
+                              onPressed: () =>
+                                  _showForm(context, currentItem['key'])),
+                          // Delete button
+                          IconButton(
+                            icon: const Icon(Icons.delete),
+                            onPressed: () => _deleteItem(currentItem['key']),
+                          ),
+                        ],
+                      )),
+                );
+              }),
+      // Add new item button
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _showForm(context, null),
+        child: const Icon(Icons.add),
+      ),
+    );
+  }
 
+  // This function will be triggered when the floating button is pressed
+  // It will also be triggered when updating an item
+  void _showForm(BuildContext ctx, int? itemKey) async {
     if (itemKey != null) {
       final existingItem =
           _items.firstWhere((element) => element['key'] == itemKey);
@@ -168,56 +215,5 @@ class _HomePageState extends State<HomePage> {
                 ],
               ),
             ));
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        title: const Text('Hive Grocerylist'),
-      ),
-      body: _items.isEmpty
-          ? const Center(
-              child: Text(
-                'No Data',
-                style: TextStyle(fontSize: 30),
-              ),
-            )
-          : ListView.builder(
-              // the list of items
-              itemCount: _items.length,
-              itemBuilder: (_, index) {
-                final currentItem = _items[index];
-                return Card(
-                  color: Colors.orange.shade100,
-                  margin: const EdgeInsets.all(10),
-                  elevation: 3,
-                  child: ListTile(
-                      title: Text(currentItem['name']),
-                      subtitle: Text(currentItem['quantity'].toString()),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          // Edit button
-                          IconButton(
-                              icon: const Icon(Icons.edit),
-                              onPressed: () =>
-                                  _showForm(context, currentItem['key'])),
-                          // Delete button
-                          IconButton(
-                            icon: const Icon(Icons.delete),
-                            onPressed: () => _deleteItem(currentItem['key']),
-                          ),
-                        ],
-                      )),
-                );
-              }),
-      // Add new item button
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _showForm(context, null),
-        child: const Icon(Icons.add),
-      ),
-    );
   }
 }
